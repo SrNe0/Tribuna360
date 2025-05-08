@@ -32,17 +32,22 @@ public class AbonoController {
     @PostMapping("/comprar")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> comprarAbono(@RequestBody Map<String, Long> payload) {
+        System.out.println("Payload recibido: " + payload); // Paso 1
         Long idAbono = payload.get("idAbono");
+        System.out.println("Valor de payload.get(\"idAbono\"): " + idAbono); // Paso 2
         Abono abono = abonoService.obtenerAbonoPorId(idAbono);
+        System.out.println("Valor de idAbono antes de llamar al servicio: " + idAbono); // Paso 3
         if (abono == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String emailUsuario = null;
+        Long idUsuario = null;
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
             Usuario usuario = userDetails.getUsuario();
             emailUsuario = usuario.getEmail();
+            idUsuario = usuario.getIdUsuario(); // Obtener el idUsuario
         } else {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -57,12 +62,15 @@ public class AbonoController {
             System.out.println("Precio del abono: " + abono.getPrecio());
             System.out.println("Email del usuario: " + emailUsuario);
             System.out.println("ID del abono: " + abono.getIdAbono());
+            System.out.println("ID del usuario: " + idUsuario); // Imprimir el idUsuario
 
             String initPoint = mercadoPagoService.crearPreferenciaDePago(
                     nombreAbono,
                     abono.getPrecio(),
                     emailUsuario,
-                    String.valueOf(abono.getIdAbono())
+                    String.valueOf(abono.getIdAbono()),
+                    idUsuario, // Pasar el idUsuario
+                    abono
             );
             return ResponseEntity.ok(Map.of("initPoint", initPoint));
         } catch (com.mercadopago.exceptions.MPApiException e) {
@@ -78,7 +86,6 @@ public class AbonoController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     // Endpoint para crear un nuevo abono (solo ADMIN)
     @PostMapping

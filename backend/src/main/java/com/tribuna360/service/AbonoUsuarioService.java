@@ -10,12 +10,20 @@ import java.util.List;
 @Service
 public class AbonoUsuarioService {
 
+    private final AbonoUsuarioRepository abonoUsuarioRepository;
+
     @Autowired
-    private AbonoUsuarioRepository abonoUsuarioRepository;
+    public AbonoUsuarioService(AbonoUsuarioRepository abonoUsuarioRepository) {
+        this.abonoUsuarioRepository = abonoUsuarioRepository;
+    }
 
     public List<AbonoUsuario> obtenerAbonosPorUsuario(Long usuarioId) {
         return abonoUsuarioRepository.findByUsuario_IdUsuario(usuarioId);
     }
 
-    // ... otros métodos
+    public AbonoUsuario guardarAbonoUsuario(AbonoUsuario abonoUsuario) {
+        return abonoUsuarioRepository.save(abonoUsuario);
+    }
+
+    // ... otros métodos que puedas tener ...
 }
