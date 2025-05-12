@@ -1,14 +1,14 @@
 version: '3.8'
 services:
   db:
-    image: mariadb:latest
+    image: mysql:8.0  # Usamos la imagen oficial de MySQL
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: tribuna360
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
     ports:
-      - "3307:3306"  # Exposición del puerto
+      - "3307:3306"
     networks:
       - tribuna360_network
 
@@ -17,11 +17,14 @@ services:
     ports:
       - "8081:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/tribuna360
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/tribuna360  # Cambiamos de mariadb a mysql
       SPRING_DATASOURCE_USERNAME: app_user
       SPRING_DATASOURCE_PASSWORD: app_password
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       - db
+    command: >
+      bash -c "dockerize -wait tcp://db:3306 -timeout 60s && java -jar /app/app.jar"
     networks:
       - tribuna360_network
 
